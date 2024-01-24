@@ -26,14 +26,24 @@ loop = asyncio.get_event_loop()
 
 
 async def discord_bot_task(bot: BillyBot):
-    @bot.slash_command(name="join", description="Join the voice channel you are in.")
-    async def join(ctx: discord.context.ApplicationContext):
+    @bot.slash_command(name="connect", description="Add Billy to the conversation.")
+    async def connect(ctx: discord.context.ApplicationContext):
         if ctx.user.voice is None:
             await ctx.respond("You are not in a voice channel.", ephemeral=True)
             return
 
-        await ctx.user.voice.channel.connect()
+        bot.vc = await ctx.user.voice.channel.connect()
         return await ctx.respond("Joining voice channel.", ephemeral=True)
+
+    @bot.slash_command(name="kick", description="Kick Billy from your voice channel.")
+    async def kick(ctx: discord.context.ApplicationContext):
+        if bot.vc is None:
+            await ctx.respond("Not in a voice channel.", ephemeral=True)
+            return
+
+        await bot.vc.disconnect()
+        bot.vc = None
+        return await ctx.respond("Leaving voice channel.", ephemeral=True)
 
     await bot.start(DISCORD_BOT_TOKEN)
 
@@ -46,6 +56,9 @@ async def main():
     queue = asyncio.Queue()
     billy_bot = BillyBot(queue)
     listener = Listen(openai_client, wolfram, youtube)
+
+    if not discord.opus.is_loaded():
+        discord.opus.load_opus("/opt/homebrew/lib/libopus.dylib")
 
     bot_task = asyncio.create_task(discord_bot_task(billy_bot))
     listener_task = asyncio.create_task(create_listener_task(listener, queue))

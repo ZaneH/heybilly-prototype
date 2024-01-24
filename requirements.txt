@@ -9,3 +9,4 @@ python-dotenv
 python-youtube
 wolframalpha
 requests
+youtube_dl

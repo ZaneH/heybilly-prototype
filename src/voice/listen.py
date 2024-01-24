@@ -167,7 +167,7 @@ class Listen():
         print("* ", line)
         print("*" * 80)
 
-        # decide what to do with the line
+        # TOOL TREE
         (tool, query) = self.tool_picker.extract_tool_and_query(line)
 
         print(tool, query)
@@ -180,9 +180,11 @@ class Listen():
             text_response = self.response_author.write_response(
                 line, added_info)
         elif tool == Tool.YouTube:
-            added_info = self.youtube_client.search(query)
-            text_response = self.response_author.write_response(
-                line, added_info)
+            random_video_id = self.youtube_client.search(query)
+            return await self.text_queue.put({
+                "type": "youtube",
+                "video_id": random_video_id
+            })
         elif tool == Tool.SoundEffect:
             added_info = self.youtube_client.search(query)
             text_response = self.response_author.write_response(
@@ -194,4 +196,7 @@ class Listen():
             pass
 
         print(text_response)
-        await self.text_queue.put(text_response)
+        await self.text_queue.put({
+            "type": "discord_post",
+            "text": text_response
+        })
