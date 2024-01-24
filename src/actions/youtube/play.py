@@ -14,7 +14,6 @@ class PlayYoutube():
             choice = self._pick_random_video(res.items)
             return choice.id.videoId
 
-        print("No shuffle")
         return res.items[0].id.videoId
 
     def _pick_random_video(self, videos):
