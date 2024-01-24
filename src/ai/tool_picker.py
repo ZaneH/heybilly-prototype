@@ -79,22 +79,13 @@ Example output:
                     "role": "user",
                     "content": query,
                 }
-            ], model="ft:gpt-3.5-turbo-1106:startup::8kORprPi",
+            ], model="ft:gpt-3.5-turbo-1106:startup::8kScSjfm",
         )
 
         tool = self._get_tool_from_response(res.choices[0].message.content)
         data = self._response_to_json(res.choices[0].message.content)
-        query = data.get('query', None)
-        text = data.get('text', None)
 
-        req_params = {
-            "tool": tool
-        }
-
-        if query is not None:
-            req_params['query'] = query
-
-        if text is not None:
-            req_params['text'] = text
+        req_params = data
+        req_params['tool'] = tool
 
         return req_params

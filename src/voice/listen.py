@@ -173,8 +173,9 @@ class Listen():
         tool = data.get('tool', Tool.NoTool)
         query = data.get('query', None)
         text = data.get('text', None)
+        stop = data.get('stop', 0)
 
-        print(tool, query, text)
+        print(tool, query, text, stop)
 
         text_response = None
         if tool == Tool.NoTool:
@@ -184,11 +185,18 @@ class Listen():
             text_response = self.response_author.write_response(
                 line, added_info)
         elif tool == Tool.YouTube:
-            random_video_id = self.youtube_client.search(query)
-            await self.text_queue.put({
-                "type": "youtube",
-                "video_id": random_video_id
-            })
+            if stop == 1:
+                await self.text_queue.put({
+                    "type": "youtube",
+                    "stop": True
+                })
+
+            else:
+                random_video_id = self.youtube_client.search(query)
+                await self.text_queue.put({
+                    "type": "youtube",
+                    "video_id": random_video_id
+                })
         elif tool == Tool.SoundEffect:
             random_video_id = self.youtube_client.search(query)
             await self.text_queue.put({

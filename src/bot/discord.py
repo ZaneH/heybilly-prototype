@@ -2,10 +2,11 @@ import asyncio
 import discord
 import yt_dlp as youtube_dl
 
-from src.tts.streamlabs import StreamlabsTTS
+from src.tts.streamlabs import StreamlabsTTS, StreamlabsVoice
 
 
 class BillyBot(discord.Bot):
+    voice = StreamlabsVoice.Ivy
     intents = discord.Intents.default()
 
     def __init__(self, queue: asyncio.Queue) -> None:
@@ -22,8 +23,13 @@ class BillyBot(discord.Bot):
                     continue
 
                 if item["type"] == "youtube":
-                    video_id = item["video_id"]
-                    await self.play_youtube(video_id)
+                    stop = item.get("stop", False)
+                    if stop:
+                        self.safely_stop()
+                        continue
+                    else:
+                        video_id = item["video_id"]
+                        await self.play_youtube(video_id)
                 if item["type"] == "sound_effect":
                     video_id = item["video_id"]
                     await self.play_youtube(video_id)
@@ -41,7 +47,7 @@ class BillyBot(discord.Bot):
                         continue
 
                     text = item["text"]
-                    mp3_url = StreamlabsTTS("Ivy").get_url(text)
+                    mp3_url = StreamlabsTTS(self.voice).get_url(text)
                     if mp3_url is not None:
                         await self.play_audio_url(mp3_url)
             except Exception as e:
@@ -55,12 +61,15 @@ class BillyBot(discord.Bot):
         channel = self.get_channel(976623220759339058)
         await channel.send(message, files=files)
 
-    async def play_youtube(self, video_id):
+    def safely_stop(self):
         if getattr(self, "vc", None) is None:
             print("Not in a voice channel.")
             return
 
         self.vc.stop()
+
+    async def play_youtube(self, video_id):
+        self.safely_stop()
 
         source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop)
         self.vc.play(source, after=lambda e: print(

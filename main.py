@@ -1,15 +1,16 @@
 import asyncio
-import discord
-from openai import OpenAI
 import os
+
+import discord
 from dotenv import load_dotenv
+from openai import OpenAI
+
 from src.actions.images.giphy import Giphy
 from src.actions.wolfram.simple_answer import WolframAnswer
-from src.voice.listen import Listen
 from src.actions.youtube.play import PlayYoutube
 from src.bot.discord import BillyBot
-import threading
-
+from src.tts.streamlabs import StreamlabsVoice
+from src.voice.listen import Listen
 
 load_dotenv()
 
@@ -56,6 +57,11 @@ async def discord_bot_task(bot: BillyBot):
 
         bot.vc.stop()
         return await ctx.respond("Stopping audio.", ephemeral=True)
+
+    @bot.slash_command(name="voice", description="Set the TTS voice.")
+    async def set_voice(ctx: discord.context.ApplicationContext, voice: StreamlabsVoice):
+        bot.voice = voice
+        return await ctx.respond(f"Set voice to {voice}.", ephemeral=True)
 
     await bot.start(DISCORD_BOT_TOKEN)
 
