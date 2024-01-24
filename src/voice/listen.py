@@ -187,7 +187,7 @@ class Listen():
         pause = data.get('pause', 0)
         shuffle = data.get('shuffle', 0)
 
-        print(tool, query, text, stop, play, pause)
+        print(tool, query, text, stop, play, pause, shuffle)
 
         text_response = None
         if tool == Tool.NoTool:

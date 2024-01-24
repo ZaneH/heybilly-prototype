@@ -119,6 +119,10 @@ class BillyBot(discord.Bot):
             self.vc.resume()
 
     async def play_youtube(self, video_id):
+        if getattr(self, "vc", None) is None:
+            print("Not in a voice channel.")
+            return
+
         self.safely_stop()
 
         source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop, stream=True)

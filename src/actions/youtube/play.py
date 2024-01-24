@@ -8,12 +8,13 @@ class PlayYoutube():
 
     def search(self, query, shuffle=False) -> str:
         res = self.client.search.list(q=query, parts=["snippet"], type=[
-            "video"], maxResults=4)
+            "video"], maxResults=10, order="relevance", safeSearch="none")
 
         if shuffle:
             choice = self._pick_random_video(res.items)
             return choice.id.videoId
 
+        print("No shuffle")
         return res.items[0].id.videoId
 
     def _pick_random_video(self, videos):
