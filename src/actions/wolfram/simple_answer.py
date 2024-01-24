@@ -10,5 +10,5 @@ class WolframAnswer():
             res = self.client.query(query)
             return next(res.results).text
         except Exception as e:
-            print("Error getting WolframAlpha result: ", e)
+            print(f"Error getting WolframAlpha result: {e}, {query}")
             return None

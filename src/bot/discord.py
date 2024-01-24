@@ -71,7 +71,7 @@ class BillyBot(discord.Bot):
     async def play_youtube(self, video_id):
         self.safely_stop()
 
-        source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop)
+        source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop, stream=True)
         self.vc.play(source, after=lambda e: print(
             'Player error: %s' % e) if e else None)
 

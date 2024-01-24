@@ -16,7 +16,7 @@ from src.ai.response_author import ResponseAuthor
 
 from src.ai.tool_picker import Tool, ToolPicker
 
-WAKE_WORDS = ["okay billy", "hey billy"]
+WAKE_WORDS = ["ok billy", "yo billy", "okay billy", "hey billy"]
 
 
 class Listen():
@@ -33,8 +33,20 @@ class Listen():
     def stop(self):
         self.should_stop = True
 
-    async def process_audio_queue(self):
+    async def process_audio_queue(self, phrase_timeout: float):
+        now = datetime.utcnow()
+        transcription = ['']
+        # The last time a recording was retrieved from the queue.
+        phrase_time = None
         while not self.should_stop:
+            phrase_complete = False
+            # If enough time has passed between recordings, consider the phrase complete.
+            # Clear the current working audio buffer to start over with the new data.
+            if phrase_time and now - phrase_time > timedelta(seconds=phrase_timeout):
+                phrase_complete = True
+            # This is the last time we received new audio data from the queue.
+            phrase_time = now
+
             audio_data = await self.data_queue.get()  # Get data asynchronously
 
             # Convert in-ram buffer to something the model can use directly without needing a temp file.
@@ -49,10 +61,15 @@ class Listen():
                 audio_np,
                 fp16=torch.cuda.is_available()
             )
+
             text = result['text'].strip()
+            if phrase_complete:
+                transcription.append(text)
+            else:
+                transcription[-1] = text
 
             # Process the transcript (this could be another async method if more complex processing is needed)
-            await self.process_transcript(text)
+            await self.process_transcript(transcription[-1])
 
             await asyncio.sleep(0.25)  # Non-blocking sleep
 
@@ -67,7 +84,7 @@ class Listen():
                             help="Don't use the english model.")
         parser.add_argument("--energy_threshold", default=1000,
                             help="Energy level for mic to detect.", type=int)
-        parser.add_argument("--record_timeout", default=2,
+        parser.add_argument("--record_timeout", default=3,
                             help="How real time the recording is in seconds.", type=float)
         parser.add_argument("--phrase_timeout", default=3,
                             help="How much empty space between recordings before we "
@@ -78,8 +95,6 @@ class Listen():
                                 "Run this with 'list' to view available Microphones.", type=str)
         args = parser.parse_args()
 
-        # The last time a recording was retrieved from the queue.
-        phrase_time = None
         # Thread safe Queue for passing data from the threaded recording callback.
         data_queue = asyncio.Queue()
         # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
@@ -120,8 +135,6 @@ class Listen():
         record_timeout = args.record_timeout
         phrase_timeout = args.phrase_timeout
 
-        transcription = ['']
-
         with source:
             recorder.adjust_for_ambient_noise(source)
 
@@ -147,7 +160,7 @@ class Listen():
         # Cue the user that we're ready to go.
         print("Billy is listening...\n")
 
-        await self.process_audio_queue()
+        await self.process_audio_queue(phrase_timeout)
 
     def has_wake_word(self, line):
         line = line.lower()
