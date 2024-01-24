@@ -30,42 +30,6 @@ loop = asyncio.get_event_loop()
 
 
 async def discord_bot_task(bot: BillyBot):
-    @bot.slash_command(name="connect", description="Add Billy to the conversation.")
-    async def connect(ctx: discord.context.ApplicationContext):
-        if ctx.user.voice is None:
-            await ctx.respond("You are not in a voice channel.", ephemeral=True)
-            return
-
-        bot.vc = await ctx.user.voice.channel.connect()
-        return await ctx.respond("Joining voice channel.", ephemeral=True)
-
-    @bot.slash_command(name="kick", description="Kick Billy from your voice channel.")
-    async def kick(ctx: discord.context.ApplicationContext):
-        try:
-            if getattr(bot, "vc", None):
-                await ctx.respond("Not in a voice channel.", ephemeral=True)
-                bot.vc = bot.voice_clients[0]
-
-            await bot.vc.disconnect()
-            bot.vc = None
-            return await ctx.respond("Leaving voice channel.", ephemeral=True)
-        except Exception as e:
-            return await ctx.respond(f"Couldn't kick the bot.", ephemeral=True)
-
-    @bot.slash_command(name="stop", description="Stop playing audio.")
-    async def stop(ctx: discord.context.ApplicationContext):
-        if getattr(bot, "vc", None):
-            await ctx.respond("Not in a voice channel.", ephemeral=True)
-            return
-
-        bot.vc.stop()
-        return await ctx.respond("Stopping audio.", ephemeral=True)
-
-    @bot.slash_command(name="voice", description="Set the TTS voice.")
-    async def set_voice(ctx: discord.context.ApplicationContext, voice: StreamlabsVoice):
-        bot.voice = voice
-        return await ctx.respond(f"Set voice to {voice}.", ephemeral=True)
-
     await bot.start(DISCORD_BOT_TOKEN)
 
 

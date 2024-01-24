@@ -14,6 +14,53 @@ class BillyBot(discord.Bot):
         self.queue = queue
         self.ready_event = asyncio.Event()
 
+        @self.slash_command(name="connect", description="Add Billy to the conversation.")
+        async def connect(ctx: discord.context.ApplicationContext):
+            if ctx.user.voice is None:
+                await ctx.respond("You are not in a voice channel.", ephemeral=True)
+                return
+
+            self.vc = await ctx.user.voice.channel.connect()
+            return await ctx.respond("Joining voice channel.", ephemeral=True)
+
+        @self.slash_command(name="kick", description="Kick Billy from your voice channel.")
+        async def kick(ctx: discord.context.ApplicationContext):
+            try:
+                if getattr(self, "vc", None):
+                    await ctx.respond("Not in a voice channel.", ephemeral=True)
+                    self.vc = self.voice_clients[0]
+
+                await self.vc.disconnect()
+                self.vc = None
+                return await ctx.respond("Leaving voice channel.", ephemeral=True)
+            except Exception as e:
+                return await ctx.respond(f"Couldn't kick the bot.", ephemeral=True)
+
+        @self.slash_command(name="stop", description="Stop playing audio.")
+        async def stop(ctx: discord.context.ApplicationContext):
+            self.safely_stop()
+            return await ctx.respond("Stopping audio.", ephemeral=True)
+
+        @self.slash_command(name="voice", description="Set the TTS voice.")
+        async def set_voice(ctx: discord.context.ApplicationContext, voice: StreamlabsVoice):
+            self.voice = voice
+            return await ctx.respond(f"Set voice to {voice}.", ephemeral=True)
+
+    async def _handle_youtube_item(self, item) -> bool:
+        stop = item.get("stop", 0)
+        play = item.get("play", 0)
+        pause = item.get("pause", 0)
+
+        if stop:
+            self.safely_stop()
+        elif pause:
+            self.safely_pause()
+        elif play:
+            self.safely_resume()
+        else:
+            video_id = item["video_id"]
+            await self.play_youtube(video_id)
+
     async def start_processor_task(self):
         await self.ready_event.wait()
         while True:
@@ -23,25 +70,13 @@ class BillyBot(discord.Bot):
                     continue
 
                 if item["type"] == "youtube":
-                    stop = item.get("stop", 0)
-                    play = item.get("play", 0)
-                    pause = item.get("pause", 0)
-
-                    if stop:
-                        self.safely_stop()
+                    if await self._handle_youtube_item(item):
                         continue
-                    elif pause:
-                        self.safely_pause()
-                        continue
-                    elif play:
-                        self.safely_resume()
-                        continue
-                    else:
-                        video_id = item["video_id"]
-                        await self.play_youtube(video_id)
                 if item["type"] == "sound_effect":
                     video_id = item["video_id"]
-                    await self.play_youtube(video_id)
+                    source = await self.create_yt_audio_source(
+                        f"https://www.youtube.com/watch?v={video_id}")
+                    self._play_and_restore(source)
                 elif item["type"] == "discord_post":
                     text = item.get("text", None)
                     image = item.get("image", None)
@@ -65,24 +100,26 @@ class BillyBot(discord.Bot):
                     text = item["text"]
                     mp3_url = StreamlabsTTS(self.voice).get_url(text)
                     if mp3_url is not None:
-                        old_source = None
-                        if self.vc.is_playing():
-                            old_source = self.vc.source
-                            self.vc.pause()
-
                         tts_source = await self.create_yt_audio_source(mp3_url)
+                        self._play_and_restore(tts_source)
 
-                        def after_callback(error, old_source):
-                            if error:
-                                print(f'Player error: {error}')
-                            elif old_source:
-                                self.vc.play(old_source, after=lambda e: print(
-                                    f'Player error: {e}') if e else None)
-
-                        self.vc.play(
-                            tts_source, after=lambda e: after_callback(e, old_source))
             except Exception as e:
                 raise e
+
+    def _play_and_restore(self, new_source):
+        def after_callback(error, old_source):
+            if error:
+                print(f'Player error: {error}')
+            elif old_source:
+                self.vc.play(old_source, after=lambda e: print(
+                    f'Player error: {e}') if e else None)
+
+        old_source = None
+        if self.vc.is_playing():
+            old_source = self.vc.source
+            self.vc.pause()
+
+        self.vc.play(new_source, after=lambda e: after_callback(e, old_source))
 
     async def on_ready(self):
         print(f"Logged in as {self.user}!")
@@ -166,6 +203,8 @@ ytdl_format_options = {
 }
 
 ffmpeg_options = {
+    'before_options':
+        '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -probesize 200M',
     'options': '-vn',
 }
 

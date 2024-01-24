@@ -212,7 +212,8 @@ class Listen():
                     "video_id": random_video_id
                 })
         elif tool == Tool.SoundEffect:
-            random_video_id = self.youtube_client.search(query)
+            random_video_id = self.youtube_client.search(query, True)
+
             await self.text_queue.put({
                 "type": "sound_effect",
                 "video_id": random_video_id
