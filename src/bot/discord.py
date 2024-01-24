@@ -36,11 +36,15 @@ class BillyBot(discord.Bot):
                 elif item["type"] == "discord_post":
                     text = item.get("text", None)
                     image = item.get("image", None)
+                    msg = ""
+
+                    if text is not None:
+                        msg += text
 
                     if image is not None:
-                        await self.send_nsfw(image)
-                    elif text is not None:
-                        await self.send_nsfw(text)
+                        msg += image
+
+                    await self.send_nsfw(msg)
                 elif item["type"] == "tts":
                     if getattr(self, "vc", None) is None:
                         print("Not in a voice channel.")
@@ -49,17 +53,35 @@ class BillyBot(discord.Bot):
                     text = item["text"]
                     mp3_url = StreamlabsTTS(self.voice).get_url(text)
                     if mp3_url is not None:
-                        await self.play_audio_url(mp3_url)
+                        old_source = None
+                        if self.vc.is_playing():
+                            old_source = self.vc.source
+                            self.vc.pause()
+
+                        tts_source = await self.create_yt_audio_source(mp3_url)
+
+                        def after_callback(error, old_source):
+                            if error:
+                                print(f'Player error: {error}')
+                            elif old_source:
+                                self.vc.play(old_source, after=lambda e: print(
+                                    f'Player error: {e}') if e else None)
+
+                        self.vc.play(
+                            tts_source, after=lambda e: after_callback(e, old_source))
             except Exception as e:
-                print("Error processing queue item: ", e)
+                raise e
 
     async def on_ready(self):
         print(f"Logged in as {self.user}!")
         self.ready_event.set()
 
     async def send_nsfw(self, message, files=None):
-        channel = self.get_channel(976623220759339058)
-        await channel.send(message, files=files)
+        try:
+            channel = self.get_channel(976623220759339058)
+            await channel.send(message, files=files)
+        except Exception as e:
+            print("Error sending Discord message: ", e)
 
     def safely_stop(self):
         if getattr(self, "vc", None) is None:
@@ -75,12 +97,19 @@ class BillyBot(discord.Bot):
         self.vc.play(source, after=lambda e: print(
             'Player error: %s' % e) if e else None)
 
-    async def play_audio_url(self, url):
+    async def create_yt_audio_source(self, url):
         if getattr(self, "vc", None) is None:
             print("Not in a voice channel.")
             return
 
         source = await YTDLSource.from_url(url, loop=self.loop, stream=True)
+        return source
+
+    def play(self, source):
+        if getattr(self, "vc", None) is None:
+            print("Not in a voice channel.")
+            return
+
         self.vc.play(source, after=lambda e: print(
             'Player error: %s' % e) if e else None)
 

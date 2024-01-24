@@ -1,17 +1,13 @@
 import argparse
 import asyncio
-import os
 import re
 from datetime import datetime, timedelta
-from queue import Queue
 from sys import platform
-from time import sleep
 
 import numpy as np
 import speech_recognition as sr
 import torch
 import whisper
-from src.bot.discord import BillyBot
 from src.ai.response_author import ResponseAuthor
 
 from src.ai.tool_picker import Tool, ToolPicker
@@ -217,17 +213,15 @@ class Listen():
                 "video_id": random_video_id
             })
         elif tool == Tool.DiscordPost:
-            if text is not None:
-                await self.text_queue.put({
-                    "type": "discord_post",
-                    "text": query
-                })
-            elif query is not None:
+            image_url = None
+            if query is not None:
                 image_url = self.giphy_client.search(query)
-                await self.text_queue.put({
-                    "type": "discord_post",
-                    "image": image_url
-                })
+
+            await self.text_queue.put({
+                "type": "discord_post",
+                "image": image_url,
+                "text": text
+            })
         else:
             print("Unknown tool", tool)
 

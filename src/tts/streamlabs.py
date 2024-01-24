@@ -9,17 +9,13 @@ class StreamlabsVoice(Enum):
     Brian = 3
     Ivy = 23
     Kimberly = 24
-    Chantal = 25
     Amy = 26
-    Vicki = 27
     Marlene = 28
-    Karl = 31
     Zeina = 32
     Miguel = 33
     Mathieu = 34
     Justin = 35
     Lucia = 36
-    Jacek = 37
     Salli = 52
     Aditi = 53
     Vitoria = 54
