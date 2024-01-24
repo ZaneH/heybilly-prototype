@@ -33,6 +33,6 @@ class ResponseAuthor():
                 "role": "user",
                 "content": user_content,
             }
-        ], model="ft:gpt-3.5-turbo-1106:startup::8kNchxhG")
+        ], model="ft:gpt-3.5-turbo-1106:startup::8ke8RP8X")
 
         return res.choices[0].message.content
