@@ -185,6 +185,7 @@ class Listen():
         stop = data.get('stop', 0)
         play = data.get('play', 0)
         pause = data.get('pause', 0)
+        shuffle = data.get('shuffle', 0)
 
         print(tool, query, text, stop, play, pause)
 
@@ -205,7 +206,7 @@ class Listen():
                 })
 
             else:
-                random_video_id = self.youtube_client.search(query)
+                random_video_id = self.youtube_client.search(query, shuffle)
                 await self.text_queue.put({
                     "type": "youtube",
                     "video_id": random_video_id

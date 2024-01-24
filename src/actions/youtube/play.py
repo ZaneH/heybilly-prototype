@@ -6,12 +6,15 @@ class PlayYoutube():
     def __init__(self, api_key):
         self.client = Client(api_key=api_key)
 
-    def search(self, query) -> str:
+    def search(self, query, shuffle=False) -> str:
         res = self.client.search.list(q=query, parts=["snippet"], type=[
             "video"], maxResults=4)
 
-        choice = self._pick_random_video(res.items)
-        return choice.id.videoId
+        if shuffle:
+            choice = self._pick_random_video(res.items)
+            return choice.id.videoId
+
+        return res.items[0].id.videoId
 
     def _pick_random_video(self, videos):
         return random.choice(videos)
