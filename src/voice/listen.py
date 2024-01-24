@@ -183,8 +183,10 @@ class Listen():
         query = data.get('query', None)
         text = data.get('text', None)
         stop = data.get('stop', 0)
+        play = data.get('play', 0)
+        pause = data.get('pause', 0)
 
-        print(tool, query, text, stop)
+        print(tool, query, text, stop, play, pause)
 
         text_response = None
         if tool == Tool.NoTool:
@@ -194,10 +196,12 @@ class Listen():
             text_response = self.response_author.write_response(
                 line, added_info)
         elif tool == Tool.YouTube:
-            if stop == 1:
+            if stop or play or pause:
                 await self.text_queue.put({
                     "type": "youtube",
-                    "stop": True
+                    "stop": stop,
+                    "play": play,
+                    "pause": pause
                 })
 
             else:

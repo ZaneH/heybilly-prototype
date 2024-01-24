@@ -17,7 +17,7 @@ class ToolPicker():
         self.openai_client = openai_client
 
     def _response_to_json(self, ai_response: str) -> dict:
-        ai_response = ai_response.lower().strip()
+        ai_response = ai_response.strip()
         try:
             json_resp = json.loads(ai_response)
             return json_resp
@@ -82,7 +82,7 @@ Example output:
                     "role": "user",
                     "content": query,
                 }
-            ], model="ft:gpt-3.5-turbo-1106:startup::8ke2Ay8O",
+            ], model="ft:gpt-3.5-turbo-1106:startup::8kfLxj1T",
         )
 
         tool = self._get_tool_from_response(res.choices[0].message.content)

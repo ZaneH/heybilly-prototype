@@ -41,17 +41,20 @@ async def discord_bot_task(bot: BillyBot):
 
     @bot.slash_command(name="kick", description="Kick Billy from your voice channel.")
     async def kick(ctx: discord.context.ApplicationContext):
-        if bot.vc is None:
-            await ctx.respond("Not in a voice channel.", ephemeral=True)
-            return
+        try:
+            if getattr(bot, "vc", None):
+                await ctx.respond("Not in a voice channel.", ephemeral=True)
+                bot.vc = bot.voice_clients[0]
 
-        await bot.vc.disconnect()
-        bot.vc = None
-        return await ctx.respond("Leaving voice channel.", ephemeral=True)
+            await bot.vc.disconnect()
+            bot.vc = None
+            return await ctx.respond("Leaving voice channel.", ephemeral=True)
+        except Exception as e:
+            return await ctx.respond(f"Couldn't kick the bot.", ephemeral=True)
 
     @bot.slash_command(name="stop", description="Stop playing audio.")
     async def stop(ctx: discord.context.ApplicationContext):
-        if bot.vc is None:
+        if getattr(bot, "vc", None):
             await ctx.respond("Not in a voice channel.", ephemeral=True)
             return
 

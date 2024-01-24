@@ -23,9 +23,18 @@ class BillyBot(discord.Bot):
                     continue
 
                 if item["type"] == "youtube":
-                    stop = item.get("stop", False)
+                    stop = item.get("stop", 0)
+                    play = item.get("play", 0)
+                    pause = item.get("pause", 0)
+
                     if stop:
                         self.safely_stop()
+                        continue
+                    elif pause:
+                        self.safely_pause()
+                        continue
+                    elif play:
+                        self.safely_resume()
                         continue
                     else:
                         video_id = item["video_id"]
@@ -42,6 +51,9 @@ class BillyBot(discord.Bot):
                         msg += text
 
                     if image is not None:
+                        if msg != "":
+                            msg += "\n"
+
                         msg += image
 
                     await self.send_nsfw(msg)
@@ -89,6 +101,22 @@ class BillyBot(discord.Bot):
             return
 
         self.vc.stop()
+
+    def safely_pause(self):
+        if getattr(self, "vc", None) is None:
+            print("Not in a voice channel.")
+            return
+
+        if self.vc.is_playing():
+            self.vc.pause()
+
+    def safely_resume(self):
+        if getattr(self, "vc", None) is None:
+            print("Not in a voice channel.")
+            return
+
+        if self.vc.is_paused():
+            self.vc.resume()
 
     async def play_youtube(self, video_id):
         self.safely_stop()
