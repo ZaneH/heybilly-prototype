@@ -6,5 +6,9 @@ class WolframAnswer():
         self.client = wolframalpha.Client(app_id)
 
     def process(self, query):
-        res = self.client.query(query)
-        return next(res.results).text
+        try:
+            res = self.client.query(query)
+            return next(res.results).text
+        except Exception as e:
+            print("Error getting WolframAlpha result: ", e)
+            return None

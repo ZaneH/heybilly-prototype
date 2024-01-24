@@ -16,15 +16,15 @@ class ToolPicker():
     def __init__(self, openai_client: OpenAI):
         self.openai_client = openai_client
 
-    def _get_query_from_response(self, ai_response: str) -> str:
+    def _response_to_json(self, ai_response: str) -> dict:
+        ai_response = ai_response.lower().strip()
         try:
-            ai_response = ai_response.lower().strip()
             json_resp = json.loads(ai_response)
-            return json_resp['query']
+            return json_resp
         except Exception as e:
-            print("Error parsing query from response: ", e)
+            print("Error parsing tool picker response: ", e)
             print("Response: ", ai_response)
-            return ""
+            return {}
 
     def _get_tool_from_response(self, ai_response: str) -> Tool:
         try:
@@ -48,7 +48,7 @@ class ToolPicker():
             print("Response: ", ai_response)
             return Tool.NoTool
 
-    def extract_tool_and_query(self, query) -> (Tool, str):
+    def determine_tools_and_query(self, query):
         prompt = f"""Your job is to decide which tool is
 most appropriate to respond to this user. If the user asks to play music, use
 youtube, if they need a currency conversion, use wolfram_alpha, if they ask
@@ -83,5 +83,18 @@ Example output:
         )
 
         tool = self._get_tool_from_response(res.choices[0].message.content)
-        query = self._get_query_from_response(res.choices[0].message.content)
-        return tool, query
+        data = self._response_to_json(res.choices[0].message.content)
+        query = data.get('query', None)
+        text = data.get('text', None)
+
+        req_params = {
+            "tool": tool
+        }
+
+        if query is not None:
+            req_params['query'] = query
+
+        if text is not None:
+            req_params['text'] = text
+
+        return req_params

@@ -6,6 +6,9 @@ class StreamlabsTTS():
         self.voice = voice
 
     def get_url(self, text):
+        if text is None:
+            return None
+
         try:
             url = "https://streamlabs.com/polly/speak"
             payload = {

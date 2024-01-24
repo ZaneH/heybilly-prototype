@@ -20,12 +20,13 @@ WAKE_WORDS = ["okay billy", "hey billy"]
 
 
 class Listen():
-    def __init__(self, openai_client, wolfram_client, youtube_client) -> None:
+    def __init__(self, openai_client, wolfram_client, youtube_client, giphy_client) -> None:
         self.should_stop = False
         self.tool_picker = ToolPicker(openai_client)
         self.response_author = ResponseAuthor(openai_client)
         self.wolfram_client = wolfram_client
         self.youtube_client = youtube_client
+        self.giphy_client = giphy_client
 
         self.data_queue = asyncio.Queue()
 
@@ -168,11 +169,14 @@ class Listen():
         print("*" * 80)
 
         # TOOL TREE
-        (tool, query) = self.tool_picker.extract_tool_and_query(line)
+        data = self.tool_picker.determine_tools_and_query(line)
+        tool = data.get('tool', Tool.NoTool)
+        query = data.get('query', None)
+        text = data.get('text', None)
 
-        print(tool, query)
+        print(tool, query, text)
 
-        text_response = ""
+        text_response = None
         if tool == Tool.NoTool:
             text_response = self.response_author.write_response(line)
         elif tool == Tool.WolframAlpha:
@@ -181,22 +185,33 @@ class Listen():
                 line, added_info)
         elif tool == Tool.YouTube:
             random_video_id = self.youtube_client.search(query)
-            return await self.text_queue.put({
+            await self.text_queue.put({
                 "type": "youtube",
                 "video_id": random_video_id
             })
         elif tool == Tool.SoundEffect:
-            added_info = self.youtube_client.search(query)
-            text_response = self.response_author.write_response(
-                line, added_info)
+            random_video_id = self.youtube_client.search(query)
+            await self.text_queue.put({
+                "type": "sound_effect",
+                "video_id": random_video_id
+            })
         elif tool == Tool.DiscordPost:
-            text_response = self.response_author.write_response(line)
+            if text is not None:
+                await self.text_queue.put({
+                    "type": "discord_post",
+                    "text": query
+                })
+            elif query is not None:
+                image_url = self.giphy_client.search(query)
+                await self.text_queue.put({
+                    "type": "discord_post",
+                    "image": image_url
+                })
         else:
             print("Unknown tool", tool)
-            pass
 
-        print(text_response)
-        await self.text_queue.put({
-            "type": "discord_post",
-            "text": text_response
-        })
+        if text_response is not None:
+            return await self.text_queue.put({
+                "type": "tts",
+                "text": text_response
+            })

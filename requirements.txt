@@ -10,3 +10,4 @@ python-youtube
 wolframalpha
 requests
 youtube_dl
+giphy_client
