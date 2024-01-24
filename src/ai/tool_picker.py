@@ -82,7 +82,7 @@ Example output:
                     "role": "user",
                     "content": query,
                 }
-            ], model="ft:gpt-3.5-turbo-1106:startup::8kScSjfm",
+            ], model="ft:gpt-3.5-turbo-1106:startup::8ke2Ay8O",
         )
 
         tool = self._get_tool_from_response(res.choices[0].message.content)
