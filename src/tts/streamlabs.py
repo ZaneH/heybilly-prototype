@@ -39,6 +39,8 @@ class StreamlabsTTS():
                 "text": text
             }
 
+            print("Speaking: ", text)
+
             res = requests.post(url, data=payload)
             return res.json()['speak_url']
 
