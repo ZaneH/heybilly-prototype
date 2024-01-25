@@ -115,7 +115,7 @@ class BillyBot(discord.Bot):
                 self.vc.play(old_source, after=lambda e: print(
                     f'Player error: {e}') if e else None)
 
-            if not timeout_task.done():
+            if timeout_task and not timeout_task.done():
                 timeout_task.cancel()
 
         async def stop_playback_after_timeout(duration):
@@ -127,6 +127,7 @@ class BillyBot(discord.Bot):
             old_source = self.vc.source
             self.vc.pause()
 
+        timeout_task = None
         self.vc.play(new_source, after=lambda e: after_callback(
             e, old_source, timeout_task))
 
