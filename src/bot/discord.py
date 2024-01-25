@@ -127,7 +127,6 @@ class BillyBot(discord.Bot):
 
     async def send_nsfw(self, message, files=None):
         try:
-            # 480456300585680897 #bots
             channel = self.get_channel(976623220759339058)
             await channel.send(message, files=files)
         except Exception as e:
@@ -138,7 +137,8 @@ class BillyBot(discord.Bot):
             print("Not in a voice channel.")
             return
 
-        self.vc.stop()
+        if self.vc.is_playing():
+            self.vc.stop()
 
     def safely_pause(self):
         if getattr(self, "vc", None) is None:
@@ -157,15 +157,18 @@ class BillyBot(discord.Bot):
             self.vc.resume()
 
     async def play_youtube(self, video_id):
-        if getattr(self, "vc", None) is None:
-            print("Not in a voice channel.")
-            return
+        try:
+            if getattr(self, "vc", None) is None:
+                print("Not in a voice channel.")
+                return
 
-        self.safely_stop()
+            self.safely_stop()
 
-        source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop, stream=True)
-        self.vc.play(source, after=lambda e: print(
-            'Player error: %s' % e) if e else None)
+            source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop, stream=True)
+            self.vc.play(source, after=lambda e: print(
+                'Player error: %s' % e) if e else None)
+        except Exception as e:
+            print("Error playing YouTube video: ", e)
 
     async def create_yt_audio_source(self, url):
         if getattr(self, "vc", None) is None:
