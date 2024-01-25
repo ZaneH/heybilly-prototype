@@ -12,6 +12,9 @@ from src.ai.response_author import ResponseAuthor
 
 from src.ai.tool_picker import Tool, ToolPicker
 
+# Heavily based on davabase/whisper_real_time for real time transcription
+# https://github.com/davabase/whisper_real_time/tree/master
+
 WAKE_WORDS = ["ok billy", "yo billy", "okay billy", "hey billy"]
 
 
@@ -64,7 +67,7 @@ class Listen():
             else:
                 transcription[-1] = text
 
-            # Process the transcript (this could be another async method if more complex processing is needed)
+            # Process transcript in the background.
             await self.process_transcript(transcription[-1])
 
             await asyncio.sleep(0.25)  # Non-blocking sleep
@@ -187,6 +190,7 @@ class Listen():
         pause = data.get('pause', 0)
         shuffle = data.get('shuffle', 0)
 
+        # debug detected flags of the tool picker
         print(tool, query, text, stop, play, pause, shuffle)
 
         text_response = None
@@ -197,6 +201,7 @@ class Listen():
             text_response = self.response_author.write_response(
                 line, added_info)
         elif tool == Tool.YouTube:
+            # youtube controls
             if stop or play or pause:
                 await self.text_queue.put({
                     "type": "youtube",
@@ -206,19 +211,25 @@ class Listen():
                 })
 
             else:
-                random_video_id = self.youtube_client.search(query, shuffle)
+                # search for specific song or shuffle
+                video_res = self.youtube_client.search(query, shuffle)
+                video_id = video_res.id.videoId
+
                 await self.text_queue.put({
                     "type": "youtube",
-                    "video_id": random_video_id
+                    "video_id": video_id
                 })
         elif tool == Tool.SoundEffect:
-            random_video_id = self.youtube_client.search(query, True)
+            # shuffle for a sfx
+            video_res = self.youtube_client.search(query, True)
+            random_video_id = video_res.id.videoId
 
             await self.text_queue.put({
                 "type": "sound_effect",
                 "video_id": random_video_id
             })
         elif tool == Tool.DiscordPost:
+            # if a search query is provided, find a gif
             image_url = None
             if query is not None:
                 image_url = self.giphy_client.search(query)
