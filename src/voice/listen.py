@@ -209,14 +209,17 @@ class Listen():
                 })
 
             else:
-                # search for specific song or shuffle
-                video_res = self.youtube_client.search(query, shuffle)
-                video_id = video_res.id.videoId
+                if query is None:
+                    text_response = "I didn't hear your YouTube search"
+                else:
+                    # search for specific song or shuffle
+                    video_res = self.youtube_client.search(query, shuffle)
+                    video_id = video_res.id.videoId
 
-                await self.text_queue.put({
-                    "type": "youtube",
-                    "video_id": video_id
-                })
+                    await self.text_queue.put({
+                        "type": "youtube",
+                        "video_id": video_id
+                    })
         elif tool == Tool.SoundEffect:
             # shuffle for a sfx
             video_res = self.youtube_client.search(query, True)
