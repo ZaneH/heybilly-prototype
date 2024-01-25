@@ -2,7 +2,7 @@ import random
 from pyyoutube import Client
 
 
-class PlayYoutube():
+class YouTubeClient():
     def __init__(self, api_key):
         self.client = Client(api_key=api_key)
 

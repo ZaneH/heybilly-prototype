@@ -7,7 +7,7 @@ from openai import OpenAI
 
 from src.actions.images.giphy import Giphy
 from src.actions.wolfram.simple_answer import WolframAnswer
-from src.actions.youtube.play import PlayYoutube
+from src.actions.youtube.client import YouTubeClient
 from src.ai.response_author import ResponseAuthor
 from src.ai.tool_picker import ToolPicker
 from src.bot.discord import BillyBot
@@ -16,20 +16,17 @@ from src.voice.listen import Listen
 load_dotenv()
 
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-
 TOOL_PICKER_MODEL_ID = os.getenv("TOOL_PICKER_MODEL_ID")
 RESPONSE_AUTHOR_MODEL_ID = os.getenv("RESPONSE_AUTHOR_MODEL_ID")
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 WOLFRAM_APP_ID = os.getenv("WOLFRAM_APP_ID")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GIPHY_API_KEY = os.getenv("GIPHY_API_KEY")
 
-youtube = PlayYoutube(GOOGLE_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+youtube = YouTubeClient(GOOGLE_API_KEY)
 wolfram = WolframAnswer(WOLFRAM_APP_ID)
 giphy = Giphy(GIPHY_API_KEY)
-
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 loop = asyncio.get_event_loop()
 
