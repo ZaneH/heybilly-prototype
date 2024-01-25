@@ -127,6 +127,7 @@ class BillyBot(discord.Bot):
 
     async def send_nsfw(self, message, files=None):
         try:
+            # 480456300585680897 #bots
             channel = self.get_channel(976623220759339058)
             await channel.send(message, files=files)
         except Exception as e:
