@@ -28,8 +28,6 @@ youtube = YouTubeClient(GOOGLE_API_KEY)
 wolfram = WolframAnswer(WOLFRAM_APP_ID)
 giphy = Giphy(GIPHY_API_KEY)
 
-loop = asyncio.get_event_loop()
-
 
 async def discord_bot_task(bot: BillyBot):
     await bot.start(DISCORD_BOT_TOKEN)
@@ -62,4 +60,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

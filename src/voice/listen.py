@@ -143,7 +143,9 @@ class Listen():
         print("* ", line)
         print("*" * 80)
 
-        # TOOL TREE
+        await self.run_tool_tree(line)
+
+    async def run_tool_tree(self, line):
         data = self.tool_picker.determine_tools_and_query(line)
         tool = data.get('tool', Tool.NoTool)
         query = data.get('query', None)
