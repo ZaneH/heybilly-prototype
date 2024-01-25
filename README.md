@@ -43,6 +43,10 @@ Follow these steps to get HeyBilly up and running on your Discord server:
    pip install -r requirements.txt
    ```
 
+5. **Setup Environment Variables**
+   
+   Rename `.env.sample` to `.env` and populate it with your own API keys.
+
 5. **Run HeyBilly**
    ```bash
    python main.py
@@ -57,6 +61,10 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=39
 ## Usage
 
 After setting up, just join a voice channel and use `/connect` to make Billy join the voice channel too. Ensure that HeyBilly has the necessary permissions to join and speak in your voice channels.
+
+### Demo Output
+
+![image](https://github.com/ZaneH/heybilly/assets/8400251/817c1130-bd66-4ea7-b49a-6e1502163d15)
 
 ## Contributing
 
