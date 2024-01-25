@@ -82,7 +82,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Your Name - [@zanehelton](https://twitter.com/zanehelton)
+Twitter - [@zanehelton](https://twitter.com/zanehelton)
 
 Project Link: [https://github.com/ZaneH/HeyBilly](https://github.com/ZaneH/HeyBilly)
 
