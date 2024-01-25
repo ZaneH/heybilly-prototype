@@ -16,6 +16,7 @@ from src.voice.listen import Listen
 load_dotenv()
 
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
 TOOL_PICKER_MODEL_ID = os.getenv("TOOL_PICKER_MODEL_ID")
 RESPONSE_AUTHOR_MODEL_ID = os.getenv("RESPONSE_AUTHOR_MODEL_ID")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -41,7 +42,7 @@ async def main():
     # a queue of dicts that contain actions to be performed (e.g. tts, youtube, etc.)
     action_queue = asyncio.Queue()
 
-    billy_bot = BillyBot(action_queue)
+    billy_bot = BillyBot(action_queue, DISCORD_CHANNEL_ID)
     tool_picker = ToolPicker(openai_client, TOOL_PICKER_MODEL_ID)
     response_author = ResponseAuthor(openai_client, RESPONSE_AUTHOR_MODEL_ID)
     listener = Listen(tool_picker, response_author, wolfram, youtube, giphy)

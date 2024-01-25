@@ -9,10 +9,11 @@ class BillyBot(discord.Bot):
     voice = StreamlabsVoice.Ivy
     intents = discord.Intents.default()
 
-    def __init__(self, queue: asyncio.Queue) -> None:
+    def __init__(self, queue: asyncio.Queue, discord_channel_id: int) -> None:
         super().__init__()
         self.queue = queue
         self.ready_event = asyncio.Event()
+        self.discord_channel_id = discord_channel_id
 
         @self.slash_command(name="connect", description="Add Billy to the conversation.")
         async def connect(ctx: discord.context.ApplicationContext):
@@ -139,7 +140,7 @@ class BillyBot(discord.Bot):
 
     async def send_nsfw(self, message, files=None):
         try:
-            channel = self.get_channel(976623220759339058)
+            channel = self.get_channel(self.discord_channel_id)
             await channel.send(message, files=files)
         except Exception as e:
             print("Error sending Discord message: ", e)
