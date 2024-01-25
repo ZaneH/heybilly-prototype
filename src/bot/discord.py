@@ -76,7 +76,7 @@ class BillyBot(discord.Bot):
                     video_id = item["video_id"]
                     source = await self.create_yt_audio_source(
                         f"https://www.youtube.com/watch?v={video_id}")
-                    self._play_and_restore(source)
+                    self._play_and_restore(source, 5)
                 elif item["type"] == "discord_post":
                     text = item.get("text", None)
                     image = item.get("image", None)
@@ -106,20 +106,32 @@ class BillyBot(discord.Bot):
             except Exception as e:
                 raise e
 
-    def _play_and_restore(self, new_source):
-        def after_callback(error, old_source):
+    def _play_and_restore(self, new_source, max_duration=0):
+        def after_callback(error, old_source, timeout_task):
             if error:
                 print(f'Player error: {error}')
             elif old_source:
                 self.vc.play(old_source, after=lambda e: print(
                     f'Player error: {e}') if e else None)
 
+            if not timeout_task.done():
+                timeout_task.cancel()
+
+        async def stop_playback_after_timeout(duration):
+            await asyncio.sleep(duration)
+            self.safely_stop()
+
         old_source = None
         if self.vc.is_playing():
             old_source = self.vc.source
             self.vc.pause()
 
-        self.vc.play(new_source, after=lambda e: after_callback(e, old_source))
+        self.vc.play(new_source, after=lambda e: after_callback(
+            e, old_source, timeout_task))
+
+        if max_duration > 0:
+            timeout_task = asyncio.create_task(
+                stop_playback_after_timeout(max_duration))
 
     async def on_ready(self):
         print(f"Logged in as {self.user}!")

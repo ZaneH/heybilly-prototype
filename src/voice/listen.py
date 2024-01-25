@@ -94,7 +94,7 @@ class Listen():
         self.audio_model = whisper.load_model(model)
 
         # These could be fine-tuned. I'm not sure what the best values are.
-        record_timeout = 3
+        record_timeout = 6
         phrase_timeout = 3
 
         with source:
