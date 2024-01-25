@@ -35,22 +35,26 @@ async def discord_bot_task(bot: BillyBot):
     await bot.start(DISCORD_BOT_TOKEN)
 
 
-async def create_listener_task(listener: Listen, queue: asyncio.Queue):
+async def create_listener_task(listener: Listen, queue):
     await listener.start(queue)
 
 
 async def main():
-    queue = asyncio.Queue()
-    billy_bot = BillyBot(queue)
+    # a queue of dicts that contain actions to be performed (e.g. tts, youtube, etc.)
+    action_queue = asyncio.Queue()
+
+    billy_bot = BillyBot(action_queue)
     tool_picker = ToolPicker(openai_client, TOOL_PICKER_MODEL_ID)
     response_author = ResponseAuthor(openai_client, RESPONSE_AUTHOR_MODEL_ID)
     listener = Listen(tool_picker, response_author, wolfram, youtube, giphy)
 
+    # if you're not on mac, you'll need to change this
     if not discord.opus.is_loaded():
         discord.opus.load_opus("/opt/homebrew/lib/libopus.dylib")
 
     bot_task = asyncio.create_task(discord_bot_task(billy_bot))
-    listener_task = asyncio.create_task(create_listener_task(listener, queue))
+    listener_task = asyncio.create_task(
+        create_listener_task(listener, action_queue))
     queue_processor_task = asyncio.create_task(
         billy_bot.start_processor_task())
 

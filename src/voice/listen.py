@@ -1,13 +1,12 @@
-import argparse
 import asyncio
 import re
 from datetime import datetime, timedelta
-from sys import platform
 
 import numpy as np
 import speech_recognition as sr
 import torch
 import whisper
+
 from src.ai.tool_picker import Tool
 
 # Heavily based on davabase/whisper_real_time for real time transcription
@@ -70,67 +69,33 @@ class Listen():
 
             await asyncio.sleep(0.25)  # Non-blocking sleep
 
-    async def start(self, text_queue: asyncio.Queue):
-        self.text_queue = text_queue
+    async def start(self, action_queue: asyncio.Queue):
+        self.action_queue = action_queue
         self.audio_queue = asyncio.Queue()
+        non_english = False
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--model", default="medium", help="Model to use",
-                            choices=["tiny", "base", "small", "medium", "large"])
-        parser.add_argument("--non_english", action='store_true',
-                            help="Don't use the english model.")
-        parser.add_argument("--energy_threshold", default=1000,
-                            help="Energy level for mic to detect.", type=int)
-        parser.add_argument("--record_timeout", default=3,
-                            help="How real time the recording is in seconds.", type=float)
-        parser.add_argument("--phrase_timeout", default=3,
-                            help="How much empty space between recordings before we "
-                            "consider it a new line in the transcription.", type=float)
-        if 'linux' in platform:
-            parser.add_argument("--default_microphone", default='pulse',
-                                help="Default microphone name for SpeechRecognition. "
-                                "Run this with 'list' to view available Microphones.", type=str)
-        args = parser.parse_args()
-
-        # Thread safe Queue for passing data from the threaded recording callback.
-        data_queue = asyncio.Queue()
         # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
         recorder = sr.Recognizer()
-        recorder.energy_threshold = args.energy_threshold
+        recorder.energy_threshold = 1000
         # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
         recorder.dynamic_energy_threshold = False
 
-        # Important for linux users.
-        # Prevents permanent application hang and crash by using the wrong Microphone
-        if 'linux' in platform:
-            mic_name = args.default_microphone
-            if not mic_name or mic_name == 'list':
-                print("Available microphone devices are: ")
-                for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                    print(f"{index}. \"{name}\"")
-                return
-            else:
-                for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                    if mic_name in name:
-                        source = sr.Microphone(
-                            sample_rate=16000, device_index=index)
-                        break
-        else:
-            # print device index and name
-            for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                print(f"{index}. \"{name}\"")
+        # print device index and name
+        for index, name in enumerate(sr.Microphone.list_microphone_names()):
+            print(f"{index}. \"{name}\"")
 
-            device_index = int(input("Enter Microphone device index: "))
-            source = sr.Microphone(device_index, sample_rate=16000)
+        device_index = int(input("Enter Microphone device index: "))
+        source = sr.Microphone(device_index, sample_rate=16000)
 
         # Load / Download model
-        model = args.model
-        if args.model != "large" and not args.non_english:
+        model = "medium"
+        if model != "large" and not non_english:
             model = model + ".en"
         self.audio_model = whisper.load_model(model)
 
-        record_timeout = args.record_timeout
-        phrase_timeout = args.phrase_timeout
+        # These could be fine-tuned. I'm not sure what the best values are.
+        record_timeout = 3
+        phrase_timeout = 3
 
         with source:
             recorder.adjust_for_ambient_noise(source)
@@ -201,7 +166,7 @@ class Listen():
         elif tool == Tool.YouTube:
             # youtube controls
             if stop or play or pause:
-                await self.text_queue.put({
+                await self.action_queue.put({
                     "type": "youtube",
                     "stop": stop,
                     "play": play,
@@ -216,7 +181,7 @@ class Listen():
                     video_res = self.youtube_client.search(query, shuffle)
                     video_id = video_res.id.videoId
 
-                    await self.text_queue.put({
+                    await self.action_queue.put({
                         "type": "youtube",
                         "video_id": video_id
                     })
@@ -225,7 +190,7 @@ class Listen():
             video_res = self.youtube_client.search(query, True)
             random_video_id = video_res.id.videoId
 
-            await self.text_queue.put({
+            await self.action_queue.put({
                 "type": "sound_effect",
                 "video_id": random_video_id
             })
@@ -235,7 +200,7 @@ class Listen():
             if query is not None:
                 image_url = self.giphy_client.search(query)
 
-            await self.text_queue.put({
+            await self.action_queue.put({
                 "type": "discord_post",
                 "image": image_url,
                 "text": text
@@ -244,7 +209,7 @@ class Listen():
             print("Unknown tool", tool)
 
         if text_response is not None:
-            return await self.text_queue.put({
+            return await self.action_queue.put({
                 "type": "tts",
                 "text": text_response
             })
