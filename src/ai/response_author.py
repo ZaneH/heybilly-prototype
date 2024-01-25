@@ -22,8 +22,9 @@ class ResponseAuthor():
     def write_response(self, message, added_info=None):
         user_content = f"Query: {message}"
         if added_info is not None:
-            user_content += f"\nAdded Info: {added_info}"
-            print("Added Info: ", added_info)
+            user_content += f"\nAdded Info:\n{added_info}"
+            print("Added Info:")
+            print(added_info)
 
         res = self.openapi_client.chat.completions.create(messages=[
             {
