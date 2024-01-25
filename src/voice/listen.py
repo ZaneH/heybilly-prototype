@@ -8,9 +8,7 @@ import numpy as np
 import speech_recognition as sr
 import torch
 import whisper
-from src.ai.response_author import ResponseAuthor
-
-from src.ai.tool_picker import Tool, ToolPicker
+from src.ai.tool_picker import Tool
 
 # Heavily based on davabase/whisper_real_time for real time transcription
 # https://github.com/davabase/whisper_real_time/tree/master
@@ -19,10 +17,10 @@ WAKE_WORDS = ["ok billy", "yo billy", "okay billy", "hey billy"]
 
 
 class Listen():
-    def __init__(self, openai_client, wolfram_client, youtube_client, giphy_client) -> None:
+    def __init__(self, tool_picker, response_author, wolfram_client, youtube_client, giphy_client) -> None:
         self.should_stop = False
-        self.tool_picker = ToolPicker(openai_client)
-        self.response_author = ResponseAuthor(openai_client)
+        self.tool_picker = tool_picker
+        self.response_author = response_author
         self.wolfram_client = wolfram_client
         self.youtube_client = youtube_client
         self.giphy_client = giphy_client

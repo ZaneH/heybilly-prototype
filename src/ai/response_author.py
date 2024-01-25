@@ -15,8 +15,9 @@ Your goal is to write as a human would speak because it will be fed into TTS.
 
 
 class ResponseAuthor():
-    def __init__(self, openapi_client: OpenAI):
+    def __init__(self, openapi_client: OpenAI, ft_model_id: str):
         self.openapi_client = openapi_client
+        self.ft_model_id = ft_model_id
 
     def write_response(self, message, added_info=None):
         user_content = f"Query: {message}"
@@ -33,6 +34,6 @@ class ResponseAuthor():
                 "role": "user",
                 "content": user_content,
             }
-        ], model="ft:gpt-3.5-turbo-1106:startup::8ke8RP8X")
+        ], model=self.ft_model_id)
 
         return res.choices[0].message.content

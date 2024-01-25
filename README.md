@@ -23,7 +23,7 @@ Follow these steps to get HeyBilly up and running on your Discord server:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/HeyBilly.git
+   git clone https://github.com/ZaneH/HeyBilly.git
    ```
 
 2. **Create a Virtual Environment**
@@ -47,7 +47,11 @@ Follow these steps to get HeyBilly up and running on your Discord server:
    
    Rename `.env.sample` to `.env` and populate it with your own API keys.
 
-5. **Run HeyBilly**
+6. **Fine-Tune the Model**
+   
+   Go to https://platform.openai.com/finetune and create a new fine-tuning job. Use the files in `./fine_tune_data` to train the `gpt-3.5-turbo-1106` model. Once finished, copy the model ID and update your environment variables accordingly.
+
+7. **Run HeyBilly**
    ```bash
    python main.py
    ```
@@ -84,7 +88,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Twitter - [@zanehelton](https://twitter.com/zanehelton)
 
-Project Link: [https://github.com/ZaneH/HeyBilly](https://github.com/ZaneH/HeyBilly)
+Project Link - [https://github.com/ZaneH/HeyBilly](https://github.com/ZaneH/HeyBilly)
 
 ---
 

@@ -13,8 +13,9 @@ class Tool(Enum):
 
 
 class ToolPicker():
-    def __init__(self, openai_client: OpenAI):
+    def __init__(self, openai_client: OpenAI, ft_model_id: str):
         self.openai_client = openai_client
+        self.ft_model_id = ft_model_id
 
     def _response_to_json(self, ai_response: str) -> dict:
         ai_response = ai_response.strip()
@@ -82,7 +83,7 @@ Example output:
                     "role": "user",
                     "content": query,
                 }
-            ], model="ft:gpt-3.5-turbo-1106:startup::8kl6nXON",
+            ], model=self.ft_model_id,
         )
 
         tool = self._get_tool_from_response(res.choices[0].message.content)
