@@ -16,6 +16,7 @@ Welcome to **HeyBilly**, the Discord voice assistant that brings the power of vo
   - "Hey Billy, post a coin flip to the Discord."
   - "Hey Billy, post a random number."
   - "Okay, Billy, post a funny GIF."
+  - "Hey Billy, play a cricket sound."
 - **Text-to-Speech (TTS) Support**: HeyBilly can speak in the voice chat, making your interactions even more dynamic. 🗣️
 
 ## Getting Started
