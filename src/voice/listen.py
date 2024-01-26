@@ -124,26 +124,31 @@ class Listen():
 
         await self.process_audio_queue(phrase_timeout)
 
-    def has_wake_word(self, line):
-        line = line.lower()
-        alpha_regex = re.compile('[^a-zA-Z ]')
-        line = alpha_regex.sub('', line)
+    def find_wake_word_start(self, line):
+        normalized_line = line.lower()
+        normalized_line = re.sub(r'[^a-zA-Z ]', '', normalized_line)
 
-        for word in WAKE_WORDS:
-            if word in line:
-                return True
+        wake_word_positions = [normalized_line.find(
+            wake_word) for wake_word in WAKE_WORDS if wake_word in normalized_line]
+        if not wake_word_positions:
+            return -1
 
-        return False
+        return min(pos for pos in wake_word_positions if pos >= 0)
 
     async def process_transcript(self, line):
-        if not self.has_wake_word(line):
-            return
+        wake_word_start = self.find_wake_word_start(line)
+        if wake_word_start == -1:
+            return  # No wake word found
+
+        # Slice the line from the first wake word
+        # it isn't perfect, but it's good enough
+        processed_line = line[wake_word_start:]
 
         print("*" * 80)
-        print("* ", line)
+        print("* ", processed_line)
         print("*" * 80)
 
-        await self.run_tool_tree(line)
+        await self.run_tool_tree(processed_line)
 
     async def run_tool_tree(self, line):
         data = self.tool_picker.determine_tools_and_query(line)
@@ -206,6 +211,14 @@ class Listen():
                 "type": "discord_post",
                 "image": image_url,
                 "text": text
+            })
+        elif tool == Tool.DiscordPostYouTube:
+            video_res = self.youtube_client.search(query, shuffle)
+            video_id = video_res.id.videoId
+
+            await self.action_queue.put({
+                "type": "discord_post.youtube",
+                "text": "https://www.youtube.com/watch?v=" + video_id
             })
         else:
             print("Unknown tool", tool)

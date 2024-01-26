@@ -92,7 +92,12 @@ class BillyBot(discord.Bot):
 
                         msg += image
 
-                    await self.send_nsfw(msg)
+                    await self.send_channel_message(msg)
+                elif item["type"] == "discord_post.youtube":
+                    text = item.get("text", None)
+                    if text is not None:
+                        await self.send_channel_message(text)
+
                 elif item["type"] == "tts":
                     if getattr(self, "vc", None) is None:
                         print("Not in a voice channel.")
@@ -139,7 +144,7 @@ class BillyBot(discord.Bot):
         print(f"Logged in as {self.user}!")
         self.ready_event.set()
 
-    async def send_nsfw(self, message, files=None):
+    async def send_channel_message(self, message, files=None):
         try:
             channel = self.get_channel(self.discord_channel_id)
             await channel.send(message, files=files)

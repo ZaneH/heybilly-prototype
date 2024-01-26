@@ -10,6 +10,7 @@ class Tool(Enum):
     YouTube = 2
     SoundEffect = 3
     DiscordPost = 4
+    DiscordPostYouTube = 5
 
 
 SYSTEM_PROMPT = """Your job is to decide which tool is
@@ -32,6 +33,7 @@ The tools you have available are:
 - youtube
 - sound_effect
 - discord_post
+- discord_post.youtube
 
 Example output:
 {"tool": "no_tool"}"""
@@ -67,6 +69,8 @@ class ToolPicker():
                 return Tool.SoundEffect
             elif json_resp['tool'] == 'discord_post':
                 return Tool.DiscordPost
+            elif json_resp['tool'] == 'discord_post.youtube':
+                return Tool.DiscordPostYouTube
             else:
                 return Tool.NoTool
         except Exception as e:
