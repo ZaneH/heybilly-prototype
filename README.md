@@ -69,7 +69,15 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=39
 
 After setting up, just join a voice channel and use `/connect` to make Billy join the voice channel too. Ensure that HeyBilly has the necessary permissions to join and speak in your voice channels.
 
-You can use `/voice` to see a list of all the voice commands available to you.
+Other commands include:
+
+- `/kick` - Disconnects Billy from the voice channel.
+- `/voice` - Changes Billy's voice.
+- `/youtube [url]` - Plays a YouTube video in the voice channel.
+- `/pause` - Pauses the YouTube video.
+- `/resume` - Resumes the YouTube video.
+- `/stop` - Stops the YouTube video.
+- `/playing` - Displays the currently playing YouTube video.
 
 ### Demo output
 
