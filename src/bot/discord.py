@@ -14,6 +14,7 @@ class BillyBot(discord.Bot):
         self.queue = queue
         self.ready_event = asyncio.Event()
         self.discord_channel_id = discord_channel_id
+        self.youtube_url = None
 
         @self.slash_command(name="connect", description="Add Billy to the conversation.")
         async def connect(ctx: discord.context.ApplicationContext):
@@ -56,6 +57,13 @@ class BillyBot(discord.Bot):
         async def youtube(ctx: discord.context.ApplicationContext, url: str):
             await self.play_youtube(url, prefix=False)
             return await ctx.respond("Playing...", ephemeral=True)
+
+        @self.slash_command(name="playing", description="Get the currently playing video.")
+        async def playing(ctx: discord.context.ApplicationContext):
+            if self.youtube_url is None:
+                return await ctx.respond("Not playing anything.", ephemeral=True)
+
+            return await ctx.respond(self.youtube_url, ephemeral=True)
 
         @self.slash_command(name="voice", description="Set the TTS voice.")
         async def set_voice(ctx: discord.context.ApplicationContext, voice: StreamlabsVoice):
@@ -214,8 +222,15 @@ class BillyBot(discord.Bot):
                 url = f"https://www.youtube.com/watch?v={id_or_url}"
 
             source = await YTDLSource.from_url(url, loop=self.loop, stream=True)
-            self.vc.play(source, after=lambda e: print(
-                'Player error: %s' % e) if e else None)
+            self.youtube_url = url
+
+            def after_youtube_callback(error):
+                if error:
+                    print(f'Player error: {error}')
+                else:
+                    self.youtube_url = None
+
+            self.vc.play(source, after=after_youtube_callback)
         except Exception as e:
             print("Error playing YouTube video: ", e)
 
