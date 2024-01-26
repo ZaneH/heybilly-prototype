@@ -62,6 +62,44 @@ class BillyBot(discord.Bot):
             video_id = item["video_id"]
             await self.play_youtube(video_id)
 
+    async def _handle_discord_post_item(self, item):
+        text = item.get("text", None)
+        image = item.get("image", None)
+        msg = ""
+
+        if text is not None:
+            msg += text
+
+        if image is not None:
+            if msg != "":
+                msg += "\n"
+
+            msg += image
+
+        await self.send_channel_message(msg)
+
+    async def _handle_discord_post_youtube_item(self, item):
+        text = item.get("text", None)
+        if text is not None:
+            await self.send_channel_message(text)
+
+    async def _handle_tts_item(self, item):
+        if getattr(self, "vc", None) is None:
+            print("Not in a voice channel.")
+            return
+
+        text = item["text"]
+        mp3_url = StreamlabsTTS(self.voice).get_url(text)
+        if mp3_url is not None:
+            tts_source = await self.create_yt_audio_source(mp3_url)
+            self._play_and_restore(tts_source)
+
+    async def _handle_sound_effect_item(self, item):
+        video_id = item["video_id"]
+        source = await self.create_yt_audio_source(
+            f"https://www.youtube.com/watch?v={video_id}")
+        self._play_and_restore(source, 5)
+
     async def start_processor_task(self):
         await self.ready_event.wait()
         while True:
@@ -71,43 +109,15 @@ class BillyBot(discord.Bot):
                     continue
 
                 if item["type"] == "youtube":
-                    if await self._handle_youtube_item(item):
-                        continue
+                    await self._handle_youtube_item(item)
                 if item["type"] == "sound_effect":
-                    video_id = item["video_id"]
-                    source = await self.create_yt_audio_source(
-                        f"https://www.youtube.com/watch?v={video_id}")
-                    self._play_and_restore(source, 5)
+                    await self._handle_sound_effect_item(item)
                 elif item["type"] == "discord_post":
-                    text = item.get("text", None)
-                    image = item.get("image", None)
-                    msg = ""
-
-                    if text is not None:
-                        msg += text
-
-                    if image is not None:
-                        if msg != "":
-                            msg += "\n"
-
-                        msg += image
-
-                    await self.send_channel_message(msg)
+                    await self._handle_discord_post_item(item)
                 elif item["type"] == "discord_post.youtube":
-                    text = item.get("text", None)
-                    if text is not None:
-                        await self.send_channel_message(text)
-
+                    await self._handle_discord_post_youtube_item(item)
                 elif item["type"] == "tts":
-                    if getattr(self, "vc", None) is None:
-                        print("Not in a voice channel.")
-                        continue
-
-                    text = item["text"]
-                    mp3_url = StreamlabsTTS(self.voice).get_url(text)
-                    if mp3_url is not None:
-                        tts_source = await self.create_yt_audio_source(mp3_url)
-                        self._play_and_restore(tts_source)
+                    await self._handle_tts_item(item)
 
             except Exception as e:
                 raise e
