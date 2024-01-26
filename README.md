@@ -11,7 +11,7 @@ Welcome to **HeyBilly**, the Discord voice assistant that brings the power of vo
   - "Yo Billy, play Lo-Fi music."
   - "Hey Billy, play Let It Be by The Beatles."
   - "Okay Billy, pause music."
-- **Fun Commands**: Coin flips, random numbers, and GIF posts are just a voice command away. 🎲🎥
+- **Fun Commands**: Videos, GIFs, and coin flips are just a voice command away. 🎲🎥
   - "Yo Billy, post a video of a cat."
   - "Hey Billy, post a coin flip to the Discord."
   - "Hey Billy, post a random number."
@@ -66,6 +66,8 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=39
 ## Usage
 
 After setting up, just join a voice channel and use `/connect` to make Billy join the voice channel too. Ensure that HeyBilly has the necessary permissions to join and speak in your voice channels.
+
+You can use `/voice` to see a list of all the voice commands available to you.
 
 ### Demo Output
 
