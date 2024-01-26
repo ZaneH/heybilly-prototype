@@ -2,7 +2,6 @@ import asyncio
 import discord
 import yt_dlp as youtube_dl
 from discord.utils import get
-from enum import Enum
 
 from src.tts.streamlabs import StreamlabsTTS, StreamlabsVoice
 
@@ -18,11 +17,16 @@ class BillyBot(discord.Bot):
         self.discord_channel_id = discord_channel_id
         self.youtube_url = None
         self.vc = None
+        self.user_float_volume = 0.8
 
         @self.slash_command(name="connect", description="Add Billy to the conversation.")
         async def connect(ctx: discord.context.ApplicationContext):
             if ctx.user.voice is None:
                 await ctx.respond("You are not in a voice channel.", ephemeral=True)
+                return
+
+            if getattr(self, "vc", None):
+                await ctx.respond("Already in a voice channel.", ephemeral=True)
                 return
 
             self.vc = await ctx.user.voice.channel.connect()
@@ -82,9 +86,9 @@ class BillyBot(discord.Bot):
                     print("Not in a voice channel.")
                     return
 
-                float_volume = int(volume) / 10
-                self.vc.source.volume = float_volume
-                return await ctx.respond(f"Set volume to {volume}.", ephemeral=True)
+                display_volume = self.safely_set_volume(volume)
+
+                return await ctx.respond(f"Set volume to {display_volume}.", ephemeral=True)
             except Exception as e:
                 print("Error setting volume: ", e)
                 return await ctx.respond(f"Error setting volume. Try again.", ephemeral=True)
@@ -142,6 +146,17 @@ class BillyBot(discord.Bot):
             f"https://www.youtube.com/watch?v={video_id}")
         self._play_and_restore(source, 5)
 
+    def _handle_volume_item(self, item):
+        value = item["value"]
+        if value == "up":
+            mult_volume = self.user_float_volume * 10
+            value = mult_volume + 2
+        elif value == "down":
+            mult_volume = self.user_float_volume * 10
+            value = mult_volume - 2
+
+        self.safely_set_volume(value)
+
     async def start_processor_task(self):
         await self.ready_event.wait()
         while True:
@@ -160,6 +175,8 @@ class BillyBot(discord.Bot):
                     await self._handle_discord_post_youtube_item(item)
                 elif item["type"] == "tts":
                     await self._handle_tts_item(item)
+                elif item["type"] == "volume":
+                    self._handle_volume_item(item)
                 else:
                     print(f"Unknown item: {item}")
 
@@ -211,6 +228,19 @@ class BillyBot(discord.Bot):
             await channel.send(message, files=files)
         except Exception as e:
             print("Error sending Discord message: ", e)
+
+    def safely_set_volume(self, value) -> int:
+        if getattr(self, "vc", None) is None:
+            print("Not in a voice channel.")
+            return
+
+        float_volume = int(value) / 10
+        float_volume = max(0, min(1, float_volume))
+
+        self.vc.source.volume = float_volume
+        self.user_float_volume = float_volume
+
+        return int(float_volume * 10)
 
     def safely_stop(self):
         if getattr(self, "vc", None) is None:
@@ -264,6 +294,7 @@ class BillyBot(discord.Bot):
                     self.youtube_url = None
 
             self.vc.play(source, after=after_youtube_callback)
+            self.vc.source.volume = self.user_float_volume
         except Exception as e:
             print("Error playing YouTube video: ", e)
 

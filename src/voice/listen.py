@@ -159,9 +159,10 @@ class Listen():
         play = data.get('play', 0)
         pause = data.get('pause', 0)
         shuffle = data.get('shuffle', 0)
+        value = data.get('value', 0)
 
         # debug detected flags of the tool picker
-        print(tool, query, text, stop, play, pause, shuffle)
+        print(tool, query, text, value, stop, play, pause, shuffle)
 
         text_response = None
         if tool == Tool.NoTool:
@@ -219,6 +220,11 @@ class Listen():
             await self.action_queue.put({
                 "type": "discord_post.youtube",
                 "text": "https://www.youtube.com/watch?v=" + video_id
+            })
+        elif tool == Tool.Volume:
+            await self.action_queue.put({
+                "type": "volume",
+                "value": value
             })
         else:
             print("Unknown tool", tool)
