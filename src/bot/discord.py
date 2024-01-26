@@ -42,6 +42,21 @@ class BillyBot(discord.Bot):
             self.safely_stop()
             return await ctx.respond("Stopping audio.", ephemeral=True)
 
+        @self.slash_command(name="pause", description="Pause audio.")
+        async def pause(ctx: discord.context.ApplicationContext):
+            self.safely_pause()
+            return await ctx.respond("Pausing audio.", ephemeral=True)
+
+        @self.slash_command(name="resume", description="Resume audio.")
+        async def resume(ctx: discord.context.ApplicationContext):
+            self.safely_resume()
+            return await ctx.respond("Resuming audio.", ephemeral=True)
+
+        @self.slash_command(name="youtube", description="Play a YouTube video (or an MP3 URL.)")
+        async def youtube(ctx: discord.context.ApplicationContext, url: str):
+            await self.play_youtube(url, prefix=False)
+            return await ctx.respond("Playing...", ephemeral=True)
+
         @self.slash_command(name="voice", description="Set the TTS voice.")
         async def set_voice(ctx: discord.context.ApplicationContext, voice: StreamlabsVoice):
             self.voice = voice
@@ -119,6 +134,7 @@ class BillyBot(discord.Bot):
                 elif item["type"] == "tts":
                     await self._handle_tts_item(item)
 
+                await asyncio.sleep(0.15)
             except Exception as e:
                 raise e
 
@@ -185,7 +201,7 @@ class BillyBot(discord.Bot):
         if self.vc.is_paused():
             self.vc.resume()
 
-    async def play_youtube(self, video_id):
+    async def play_youtube(self, id_or_url, prefix=True):
         try:
             if getattr(self, "vc", None) is None:
                 print("Not in a voice channel.")
@@ -193,7 +209,11 @@ class BillyBot(discord.Bot):
 
             self.safely_stop()
 
-            source = await YTDLSource.from_url(f"https://www.youtube.com/watch?v={video_id}", loop=self.loop, stream=True)
+            url = id_or_url
+            if prefix:
+                url = f"https://www.youtube.com/watch?v={id_or_url}"
+
+            source = await YTDLSource.from_url(url, loop=self.loop, stream=True)
             self.vc.play(source, after=lambda e: print(
                 'Player error: %s' % e) if e else None)
         except Exception as e:
