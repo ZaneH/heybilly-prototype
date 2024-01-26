@@ -1,6 +1,8 @@
 import asyncio
 import discord
 import yt_dlp as youtube_dl
+from discord.utils import get
+from enum import Enum
 
 from src.tts.streamlabs import StreamlabsTTS, StreamlabsVoice
 
@@ -15,6 +17,7 @@ class BillyBot(discord.Bot):
         self.ready_event = asyncio.Event()
         self.discord_channel_id = discord_channel_id
         self.youtube_url = None
+        self.vc = None
 
         @self.slash_command(name="connect", description="Add Billy to the conversation.")
         async def connect(ctx: discord.context.ApplicationContext):
@@ -30,13 +33,15 @@ class BillyBot(discord.Bot):
             try:
                 if getattr(self, "vc", None):
                     await ctx.respond("Not in a voice channel.", ephemeral=True)
-                    self.vc = self.voice_clients[0]
+                    self.vc = get(self.voice_clients, guild=ctx.guild)
 
-                await self.vc.disconnect()
-                self.vc = None
-                return await ctx.respond("Leaving voice channel.", ephemeral=True)
+                if self.vc and self.vc.is_connected():
+                    await self.vc.disconnect()
+                    return await ctx.respond("Leaving voice channel.", ephemeral=True)
+                else:
+                    return await ctx.respond("Not in a voice channel.", ephemeral=True)
             except Exception as e:
-                return await ctx.respond(f"Couldn't kick the bot.", ephemeral=True)
+                print("Error kicking Billy: ", e)
 
         @self.slash_command(name="stop", description="Stop playing audio.")
         async def stop(ctx: discord.context.ApplicationContext):
@@ -69,6 +74,16 @@ class BillyBot(discord.Bot):
         async def set_voice(ctx: discord.context.ApplicationContext, voice: StreamlabsVoice):
             self.voice = voice
             return await ctx.respond(f"Set voice to {voice}.", ephemeral=True)
+
+        @self.slash_command(name="volume", description="Set the volume (0-10).")
+        async def set_volume(ctx: discord.context.ApplicationContext, volume: int):
+            if getattr(self, "vc", None) is None:
+                print("Not in a voice channel.")
+                return
+
+            volume = int(volume) / 10
+            self.vc.source.volume = volume
+            return await ctx.respond(f"Set volume to {volume}.", ephemeral=True)
 
     async def _handle_youtube_item(self, item):
         stop = item.get("stop", 0)

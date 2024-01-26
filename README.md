@@ -74,10 +74,11 @@ Other commands include:
 - `/kick` - Disconnects Billy from the voice channel.
 - `/voice` - Changes Billy's voice.
 - `/youtube [url]` - Plays a YouTube video in the voice channel.
-- `/pause` - Pauses the YouTube video.
-- `/resume` - Resumes the YouTube video.
-- `/stop` - Stops the YouTube video.
+- `/pause` - Pauses the music.
+- `/resume` - Resumes the music.
+- `/stop` - Stops the music.
 - `/playing` - Displays the currently playing YouTube video.
+- `/volume [0-10]` - Changes the volume of the music.
 
 ### Demo output
 
