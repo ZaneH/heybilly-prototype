@@ -25,7 +25,7 @@ class StreamlabsVoice(Enum):
 
 
 class StreamlabsTTS():
-    def __init__(self, voice=StreamlabsVoice.Ivy):
+    def __init__(self, voice=StreamlabsVoice.Justin):
         self.voice = voice
 
     def get_url(self, text):
