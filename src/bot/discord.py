@@ -141,6 +141,8 @@ class BillyBot(discord.Bot):
                     await self._handle_discord_post_youtube_item(item)
                 elif item["type"] == "tts":
                     await self._handle_tts_item(item)
+                else:
+                    print(f"Unknown item: {item}")
 
                 await asyncio.sleep(0.15)
             except Exception as e:
