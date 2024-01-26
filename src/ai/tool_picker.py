@@ -25,7 +25,14 @@ You should only use wolfram_alpha for hard math problems or things that change
 already. Simple questions can be answered with no_tool.
 
 When choosing a discord_post, you can optionally include "query" and "text" keys
-to send a GIF and/or attach a message. This will help give others context.
+to send a GIF and/or attach a message. You must specify one or the other, or both.
+"query" must be letters and spaces only to ensure a GIF can be found. "text" can
+be anything.
+
+The "shuffle" key can be added to certain tools that require a search term. If
+the request is non-specific like "show me a trailer", you can add "shuffle": 1,
+if the request is specific like "show me the spiderman trailer", you can omit the
+"shuffle" key.
 
 The tools you have available are:
 - no_tool
