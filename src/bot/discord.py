@@ -77,13 +77,17 @@ class BillyBot(discord.Bot):
 
         @self.slash_command(name="volume", description="Set the volume (0-10).")
         async def set_volume(ctx: discord.context.ApplicationContext, volume: int):
-            if getattr(self, "vc", None) is None:
-                print("Not in a voice channel.")
-                return
+            try:
+                if getattr(self, "vc", None) is None:
+                    print("Not in a voice channel.")
+                    return
 
-            volume = int(volume) / 10
-            self.vc.source.volume = volume
-            return await ctx.respond(f"Set volume to {volume}.", ephemeral=True)
+                float_volume = int(volume) / 10
+                self.vc.source.volume = float_volume
+                return await ctx.respond(f"Set volume to {volume}.", ephemeral=True)
+            except Exception as e:
+                print("Error setting volume: ", e)
+                return await ctx.respond(f"Error setting volume. Try again.", ephemeral=True)
 
     async def _handle_youtube_item(self, item):
         stop = item.get("stop", 0)
