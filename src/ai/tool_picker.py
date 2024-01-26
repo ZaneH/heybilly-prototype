@@ -21,7 +21,7 @@ for what the user says, simply choose no_tool. Your response will be in a JSON d
 with at least this key: "tool".
 
 You should only use wolfram_alpha for hard math problems or things that change
-(e.g. weather, stock price, time, population). You know lots of simple facts
+(e.g. weather, stock price, time, population, sports). You know lots of simple facts
 already. Simple questions can be answered with no_tool.
 
 When choosing a discord_post, you can optionally include "query" and "text" keys
