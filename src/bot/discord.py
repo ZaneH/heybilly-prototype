@@ -6,7 +6,7 @@ from src.tts.streamlabs import StreamlabsTTS, StreamlabsVoice
 
 
 class BillyBot(discord.Bot):
-    voice = StreamlabsVoice.Ivy
+    voice = StreamlabsVoice.Justin
     intents = discord.Intents.default()
 
     def __init__(self, queue: asyncio.Queue, discord_channel_id: int) -> None:
