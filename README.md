@@ -10,10 +10,11 @@ Welcome to **HeyBilly**, the Discord voice assistant that brings the power of vo
 - **YouTube DJ**: Play, pause, stop, or resume YouTube videos in voice chat. 🎶
   - "Yo Billy, play Lo-Fi music."
   - "Hey Billy, play Let It Be by The Beatles."
-  - "Okay Billy, stop the music."
+  - "Okay Billy, pause music."
 - **Fun Commands**: Coin flips, random numbers, and GIF posts are just a voice command away. 🎲🎥
+  - "Yo Billy, post a video of a cat."
   - "Hey Billy, post a coin flip to the Discord."
-  - "Hey Billy, post a number between 1 and 3 in the Discord."
+  - "Hey Billy, post a random number."
   - "Okay, Billy, post a funny GIF."
 - **Text-to-Speech (TTS) Support**: HeyBilly can speak in the voice chat, making your interactions even more dynamic. 🗣️
 
