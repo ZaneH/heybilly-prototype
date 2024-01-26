@@ -17,6 +17,7 @@ Welcome to **HeyBilly**, the Discord voice assistant that brings the power of vo
   - "Hey Billy, post a random number."
   - "Okay, Billy, post a funny GIF."
   - "Hey Billy, play a cricket sound."
+  - "Hey Billy, post a movie trailer."
 - **Text-to-Speech (TTS) Support**: HeyBilly can speak in the voice chat, making your interactions even more dynamic. 🗣️
 
 ## Getting Started
@@ -70,9 +71,9 @@ After setting up, just join a voice channel and use `/connect` to make Billy joi
 
 You can use `/voice` to see a list of all the voice commands available to you.
 
-### Demo Output
+### Demo output
 
-![image](https://github.com/ZaneH/heybilly/assets/8400251/817c1130-bd66-4ea7-b49a-6e1502163d15)
+![Console output](https://github.com/ZaneH/heybilly/assets/8400251/a1d8251b-4189-484b-9e5c-1c8dee4404ac)
 
 ## Contributing
 
