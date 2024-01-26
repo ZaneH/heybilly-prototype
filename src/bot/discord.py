@@ -70,7 +70,7 @@ class BillyBot(discord.Bot):
             self.voice = voice
             return await ctx.respond(f"Set voice to {voice}.", ephemeral=True)
 
-    async def _handle_youtube_item(self, item) -> bool:
+    async def _handle_youtube_item(self, item):
         stop = item.get("stop", 0)
         play = item.get("play", 0)
         pause = item.get("pause", 0)
@@ -133,7 +133,7 @@ class BillyBot(discord.Bot):
 
                 if item["type"] == "youtube":
                     await self._handle_youtube_item(item)
-                if item["type"] == "sound_effect":
+                elif item["type"] == "sound_effect":
                     await self._handle_sound_effect_item(item)
                 elif item["type"] == "discord_post":
                     await self._handle_discord_post_item(item)
@@ -149,6 +149,12 @@ class BillyBot(discord.Bot):
                 raise e
 
     def _play_and_restore(self, new_source, max_duration=0):
+        """
+        Play a new audio source and restore the previous one after it finishes.
+
+        :param new_source: The new audio source to play.
+        :param max_duration: The maximum duration to play the new audio source for.
+        """
         def after_callback(error, old_source, timeout_task):
             if error:
                 print(f'Player error: {error}')
@@ -212,6 +218,12 @@ class BillyBot(discord.Bot):
             self.vc.resume()
 
     async def play_youtube(self, id_or_url, prefix=True):
+        """
+        Play a YouTube video.
+
+        :param id_or_url: The YouTube video ID or URL.
+        :param prefix: Whether or not to prefix the ID with "https://www.youtube.com/watch?v=".
+        """
         try:
             if getattr(self, "vc", None) is None:
                 print("Not in a voice channel.")
